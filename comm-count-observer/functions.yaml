@@ -1,0 +1,62 @@
+- name: MPI_Allgather
+  arguments: >-
+    const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
+    int recvcount, MPI_Datatype recvtype, MPI_Comm comm
+  increment_comm_on_enter: true
+  decrement_comm_on_exit: true
+- name: MPI_Iallgather
+  arguments: >-
+    const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
+    int recvcount, MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request
+  increment_comm_on_enter: true
+  decrement_comm_on_exit: false
+- name: MPI_Allgatherv
+  arguments: >-
+    const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
+    const int recvcounts[], const int displs[], MPI_Datatype recvtype,
+    MPI_Comm comm
+  increment_comm_on_enter: true
+  decrement_comm_on_exit: true
+- name: MPI_Iallgatherv
+  arguments: >-
+    const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
+    const int recvcounts[], const int displs[], MPI_Datatype recvtype,
+    MPI_Comm comm, MPI_Request *request
+  increment_comm_on_enter: true
+  decrement_comm_on_exit: false
+- name: MPI_Allreduce
+  arguments: >-
+    const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype,
+    MPI_Op op, MPI_Comm comm
+  increment_comm_on_enter: true
+  decrement_comm_on_exit: true
+- name: MPI_Iallreduce
+  arguments: >-
+    const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype,
+    MPI_Op op, MPI_Comm comm, MPI_Request *request
+  increment_comm_on_enter: true
+  decrement_comm_on_exit: false
+- name: MPI_Alltoall
+  arguments: >-
+    const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
+    int recvcount, MPI_Datatype recvtype, MPI_Comm comm
+  increment_comm_on_enter: true
+  decrement_comm_on_exit: true
+- name: MPI_Ialltoall
+  arguments: >-
+    const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
+    int recvcount, MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request
+  increment_comm_on_enter: true
+  decrement_comm_on_exit: false
+- name: MPI_Scatter
+  arguments: >-
+    const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
+    int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm
+  increment_comm_on_enter: true
+  decrement_comm_on_exit: true
+- name: MPI_Gather
+  arguments: >-
+    const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf,
+    int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm
+  increment_comm_on_enter: true
+  decrement_comm_on_exit: true

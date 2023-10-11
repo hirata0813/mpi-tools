@@ -8,10 +8,10 @@
 /* random integer */
 #define RARELY_CONFLICT_TAG 1795111794
 
-void send_event(char *funcname, char *eventname, int rank) {
+void send_event(int delta_n_comm, int rank) {
     char buf[32];
 
-    sprintf(buf, "%s,%s,%d", funcname, eventname, rank);
+    sprintf(buf, "%d,%d", delta_n_comm, rank);
     // send buf including terminating null char
     MPI_Send(buf, 32, MPI_CHAR, OBSR_RANK, RARELY_CONFLICT_TAG,
              MPI_COMM_WORLD);
@@ -22,7 +22,8 @@ void *run_observer(void *) {
     MPI_Status status;
     int n_process_waiting = 0;
 
-    char funcname[32], eventname[32];
+    int n_comm_of_rank[16] = {0};
+    int delta_n_comm;
     int rank;
 
     while (1) {
@@ -34,17 +35,11 @@ void *run_observer(void *) {
         }
         MPI_Recv(buf, 32, MPI_CHAR, MPI_ANY_SOURCE, RARELY_CONFLICT_TAG,
                  MPI_COMM_WORLD, &status);
-        sscanf(buf, "%[^,],%[^,],%d", funcname, eventname, &rank);
-        if (strcmp(eventname, "begin") == 0) {
-            n_process_waiting += 1;
-        } else if (strcmp(eventname, "end") == 0) {
-            n_process_waiting -= 1;
-        } else {
-            // unreachable
-        }
+        sscanf(buf, "%d,%d", &delta_n_comm, &rank);
+        n_comm_of_rank[rank] += delta_n_comm;
 #ifdef DEBUG
-        printf("%s,%s,%d,%d\n", funcname, eventname, rank,
-               n_process_waiting);
+        // printf("%s,%s,%d,%d\n", funcname, eventname, rank,
+        //        n_process_waiting);
 #endif
     }
 
@@ -89,10 +84,10 @@ int MPI_Scatter(const void *sendbuf, int sendcount,
     int result, world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-    send_event("MPI_Scatter", "begin", world_rank);
+    send_event(+1, world_rank);
     result = PMPI_Scatter(sendbuf, sendcount, sendtype, recvbuf,
                           recvcount, recvtype, root, comm);
-    send_event("MPI_Scatter", "end", world_rank);
+    send_event(-1, world_rank);
 
     return result;
 }
@@ -103,10 +98,10 @@ int MPI_Gather(const void *sendbuf, int sendcount,
     int result, world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-    send_event("MPI_Gather", "begin", world_rank);
+    send_event(+1, world_rank);
     result = PMPI_Gather(sendbuf, sendcount, sendtype, recvbuf,
                          recvcount, recvtype, root, comm);
-    send_event("MPI_Gather", "end", world_rank);
+    send_event(-1, world_rank);
 
     return result;
 }
