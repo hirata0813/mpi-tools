@@ -2,6 +2,7 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include <time.h>
 struct timespec ct1, ct6;
@@ -17,6 +18,12 @@ double timespec_to_sec(time_t sec, time_t nsec) {
 
 double calc_elapsed_time(struct timespec start, struct timespec end) {
     return timespec_to_sec(end.tv_sec - start.tv_sec, end.tv_nsec - start.tv_nsec);
+}
+
+// Count up the number of reveived SIGCONT
+volatile sig_atomic_t num_sigcont = 0;
+void sigcont_handler(int signum) {
+    num_sigcont += 1;
 }
 
 int MPI_Init(int *argc, char ***argv) {
@@ -38,6 +45,9 @@ int MPI_Init(int *argc, char ***argv) {
         exit(1);
     }
 
+    // Insert handler for SIGCONT
+    signal(SIGCONT, sigcont_handler);
+
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ct1);
     clock_gettime(CLOCK_REALTIME, &rt1);
 
@@ -57,7 +67,7 @@ int MPI_Finalize() {
     ret = PMPI_Finalize();
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ct6);
     clock_gettime(CLOCK_REALTIME, &rt6);
-    printf("%d, %f, %f\n", rank, calc_elapsed_time(rt1, rt6), calc_elapsed_time(ct1, ct6));
+    printf("%d, %f, %f, %d\n", rank, calc_elapsed_time(rt1, rt6), calc_elapsed_time(ct1, ct6), num_sigcont);
 
     pid = getpid();
     fd = create_udp_socket();
