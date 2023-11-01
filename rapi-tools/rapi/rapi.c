@@ -3,6 +3,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <time.h>
+struct timespec ct1, ct6;
+struct timespec rt1, rt6;
+
+double nsec_to_ms(time_t nsec) {
+    return (double)nsec / (1000*1000*1000);
+}
+
+double timespec_to_sec(time_t sec, time_t nsec) {
+    return (double)sec + nsec_to_ms(nsec);
+}
+
+double calc_elapsed_time(struct timespec start, struct timespec end) {
+    return timespec_to_sec(end.tv_sec - start.tv_sec, end.tv_nsec - start.tv_nsec);
+}
+
 int MPI_Init(int *argc, char ***argv) {
     int ret;
     pid_t pid;
@@ -22,6 +38,9 @@ int MPI_Init(int *argc, char ***argv) {
         exit(1);
     }
 
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ct1);
+    clock_gettime(CLOCK_REALTIME, &rt1);
+
     ret = PMPI_Init(argc, argv);
 
     return ret;
@@ -32,7 +51,13 @@ int MPI_Finalize() {
     pid_t pid;
     int fd;
 
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
     ret = PMPI_Finalize();
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ct6);
+    clock_gettime(CLOCK_REALTIME, &rt6);
+    printf("%d, %f, %f\n", rank, calc_elapsed_time(rt1, rt6), calc_elapsed_time(ct1, ct6));
 
     pid = getpid();
     fd = create_udp_socket();
